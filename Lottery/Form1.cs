@@ -8,8 +8,6 @@ using System.Windows.Forms;
 using System.IO;
 
 ///抽奖小程序
-///魏韶颖
-///2016年1月4日
 ///
 namespace Lottery
 {
@@ -62,7 +60,9 @@ namespace Lottery
                 this.btnCheckRepeat.Enabled = false;
                 return;
             }
-            InitScrollIndex();
+            Random rnd = new Random();
+            int index = rnd.Next(len);  // 创建一个数字是0~len-1之间的
+            InitScrollIndex(index);
 
             this.lbl5.Text = persons[p5];
             this.lbl4.Text = persons[p4];
@@ -120,6 +120,8 @@ namespace Lottery
             len = persons.Length;
             if (len < 6)
             {
+                this.btnStart.Enabled = false;
+                this.btnStop.Enabled = false;
                 MessageBox.Show("名单中的姓名太少，至少应有6人");
             }
         }
@@ -128,26 +130,30 @@ namespace Lottery
         /// <summary>
         /// 初始化下标
         /// </summary>
-        private void InitScrollIndex()
+        private void InitScrollIndex(int p3init)
         {
-            if (bTop2Bottom)
-            {
-                //从上往下则需要向左移动
-                p5 = len - 5;
-                p4 = len - 4;
-                p3 = len - 3;
-                p2 = len - 2;
-                p1 = len - 1;
-            }
-            else
-            {
-                //从下往上则需要向右移动
-                p5 = 0;
-                p4 = 1;
-                p3 = 2;
-                p2 = 3;
-                p1 = 4;
-            }
+            if (p3init >= len)
+                p3init -= len;
+            else if (p3init < 0)
+                p3init += len;
+
+            p3 = p3init;
+
+            p2 = p3 - 1;
+            if (p2 < 0)
+                p2 += len;
+
+            p1 = p3 - 2;
+            if (p1 < 0)
+                p1 += len;
+
+            p4 = p3 + 1;
+            if (p4 >= len)
+                p4 -= len;
+
+            p5 = p3 + 2;
+            if (p5 >= len)
+                p5 -= len;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -239,6 +245,30 @@ namespace Lottery
             this.lblResult.Text = result;
             this.lblResult.Show();
             this.lblWait.Hide();
+
+            //去除已经中奖者，防止重复中奖
+            List<String> listtmp = new List<string>(persons);
+            listtmp.Remove(persons[p3]);
+            persons = listtmp.ToArray();
+            //string sname = String.Join(" ", persons);
+            //MessageBox.Show(sname);
+
+            len = persons.Length;
+            if (len < 6)
+            {
+                this.btnStart.Enabled = false;
+                this.btnStop.Enabled = false;
+                MessageBox.Show("名单中的姓名太少，至少应有6人");
+            }
+            //删除一位之后调整索引
+            if (bTop2Bottom)
+            {   
+                InitScrollIndex(p3);
+            }
+            else
+            {
+                InitScrollIndex(p3-1);
+            }
         }
 
         private void btnReverse_Click(object sender, EventArgs e)
@@ -248,7 +278,7 @@ namespace Lottery
 
         private void btnInitPool_Click(object sender, EventArgs e)
         {
-            LoadFromFile();
+            InitData();
             MessageBox.Show("初始化奖池完成，共" + len + "人");
         }
 
@@ -279,7 +309,7 @@ namespace Lottery
 
         private void toolStripMenuItemAuthor_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("微信号：weishaoying\n编写日期：2016年1月4日");
+            MessageBox.Show("作者：Veipin\n编写日期：2020年1月9日");
         }
 
         private void toolStripMenuItemDoc_Click(object sender, EventArgs e)
