@@ -69,6 +69,12 @@ namespace Lottery
             this.lbl3.Text = persons[p3];
             this.lbl2.Text = persons[p2];
             this.lbl1.Text = persons[p1];
+
+            string line = string.Format("{0} 初始化奖池，重新开始抽奖，共 {1} 人", DateTime.Now.ToString(), len);
+            SaveLotteryList("  ");
+            SaveLotteryList("  ");
+            SaveLotteryList(line);
+            SaveLotteryList("  ");
         }
 
         private void LoadFromFile()
@@ -246,6 +252,9 @@ namespace Lottery
             this.lblResult.Show();
             this.lblWait.Hide();
 
+            string line = string.Format("{0} {1} 获得 {2}", DateTime.Now.ToString(), persons[p3], this.cmbPrize.SelectedItem.ToString());
+            SaveLotteryList(line);
+
             //去除已经中奖者，防止重复中奖
             List<String> listtmp = new List<string>(persons);
             listtmp.Remove(persons[p3]);
@@ -322,6 +331,16 @@ namespace Lottery
             MessageBox.Show("已是最新版本");
         }
 
+        private void SaveLotteryList(string line)
+        {
+            //System.IO.File.WriteAllText(@"中奖名单.txt", line); // 覆盖
+            
+            // 追加
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"中奖名单.txt", true))
+            {
+                file.WriteLine(line);
+            }   
+        }
 
     }
 }
